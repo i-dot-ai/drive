@@ -34,16 +34,13 @@ from ..models import TextChunk
 from openai import AzureOpenAI
 
 logger = logging.getLogger(__name__)
-<<<<<<< HEAD
 client = AzureOpenAI(
   api_key = settings.AZURE_OPENAI_API_KEY,
   api_version = "2024-10-21",
   azure_endpoint =settings.AZURE_OPENAI_ENDPOINT
 )
-=======
 md = MarkItDown()
 
->>>>>>> b3967b1 (get text content from file)
 
 ITEM_FOLDER = "item"
 UUID_REGEX = (
@@ -634,8 +631,11 @@ class ItemViewSet(
         file.close()
 
         file = default_storage.open(item.file_key)
-        extracted_texts = [f"some content goes here {i}" for i in range(4)]
+        file_content = BytesIO(file.read())
+        extracted_texts = md.convert(file_content).text_content 
+        extracted_texts = [extracted_texts]
 
+        # TODO - add chunking
 
         model = "text-embedding-3-large"
         response = client.embeddings.create(input=extracted_texts, model=model).data
