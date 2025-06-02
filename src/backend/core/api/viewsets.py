@@ -1,6 +1,7 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
+from io import BytesIO
 import logging
 import re
 from urllib.parse import unquote, urlparse
@@ -21,6 +22,7 @@ from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
 from rest_framework.throttling import UserRateThrottle
+from markitdown import MarkItDown
 
 from core import enums, models
 from core.tasks.item import process_item_deletion
@@ -32,11 +34,16 @@ from ..models import TextChunk
 from openai import AzureOpenAI
 
 logger = logging.getLogger(__name__)
+<<<<<<< HEAD
 client = AzureOpenAI(
   api_key = settings.AZURE_OPENAI_API_KEY,
   api_version = "2024-10-21",
   azure_endpoint =settings.AZURE_OPENAI_ENDPOINT
 )
+=======
+md = MarkItDown()
+
+>>>>>>> b3967b1 (get text content from file)
 
 ITEM_FOLDER = "item"
 UUID_REGEX = (
@@ -719,8 +726,10 @@ class ItemViewSet(
         The user must be an administrator or owner of both the item being moved
         and the target parent item.
         """
-        user = request.user
+        user = request.use
         item = self.get_object()  # including permission checks
+
+
 
         # Validate the input payload
         serializer = serializers.MoveItemSerializer(data=request.data)
