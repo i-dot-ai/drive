@@ -672,6 +672,23 @@ class ItemViewSet(
     @drf.decorators.action(
         detail=False,
         methods=["get"],
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def search(self, request, *args, **kwargs):
+        """Search for text within files created by the current user."""
+        user = request.user
+        title_query = self.request.query_params.get('title', "")
+
+        queryset = (super().get_queryset()
+                    .select_related("creator")
+                    .filter(creator=user)
+                    .filter(title__icontains=title_query))
+
+        return self.get_response_for_queryset(queryset)
+
+    @drf.decorators.action(
+        detail=False,
+        methods=["get"],
     )
     def trashbin(self, request, *args, **kwargs):
         """
