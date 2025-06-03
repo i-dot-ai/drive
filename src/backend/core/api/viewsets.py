@@ -15,6 +15,7 @@ from django.core.files.storage import default_storage
 from django.db import models as db
 from django.db import transaction
 from django.db.models.expressions import RawSQL
+from pgvector.django import CosineDistance
 
 import magic
 import rest_framework as drf
@@ -685,13 +686,34 @@ class ItemViewSet(
         """Search for text within files created by the current user."""
         user = request.user
         title_query = self.request.query_params.get('title', "")
+        if not title_query:
+            raise ValidationError(detail='title may not be blank')
 
-        queryset = (super().get_queryset()
-                    .select_related("creator")
-                    .filter(creator=user)
-                    .filter(title__icontains=title_query))
+        model = "text-embedding-3-large"
+        embeddings = client.embeddings.create(input=[title_query], model=model).data
+        embedded_query = embeddings[0].embedding
 
-        return self.get_response_for_queryset(queryset)
+        top_k_results = self.request.query_params.get('k', 10)
+
+        queryset = (
+            TextChunk.objects
+            .select_related("item")
+            .filter(item__creator=user)
+            .annotate(distance=CosineDistance("embedding", embedded_query))
+            .order_by("distance")[:top_k_results]
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = serializers.TextChunkSerializer(page, many=True)
+            # serializer = self.get_serializer(page, many=True)
+            result = self.get_paginated_response(serializer.data)
+            return result
+
+        # serializer = self.get_serializer(queryset, many=True)
+        serializer = serializers.TextChunkSerializer(queryset, many=True)
+        return drf.response.Response(serializer.data)
+
 
     @drf.decorators.action(
         detail=False,
