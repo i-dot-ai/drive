@@ -715,7 +715,7 @@ class ItemViewSet(
             filter_args = {}
         title_query = self.request.query_params.get('title', "")
         if not title_query:
-            raise ValidationError(detail='title may not be blank')
+            raise drf.exceptions.ValidationError({"title": 'may not be blank'})
 
         model = "text-embedding-3-large"
         embeddings = client.embeddings.create(input=[title_query], model=model).data

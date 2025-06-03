@@ -10,6 +10,7 @@ from rest_framework import exceptions, serializers
 
 from core import models
 from core.api import utils
+from django.core.files.storage import default_storage
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -541,10 +542,16 @@ class TextChunkSerializer(serializers.ModelSerializer):
     order = serializers.IntegerField()
     filename = serializers.CharField(read_only=True, source="item.filename")
     file_key = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     def get_file_key(self, value):
         return f"media/{value.item.file_key}"
 
+    def get_url(self, value):
+        """Return the URL of the item."""
+        url = default_storage.url(f"{value.item.id}/{value.item.file_key}")
+        return url
+
     class Meta:
         model = models.TextChunk
-        fields = ['text', 'order', 'filename', 'file_key']
+        fields = ['text', 'order', 'filename', 'file_key', 'url']
