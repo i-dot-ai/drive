@@ -12,17 +12,20 @@ type Inputs = {
 
 const ExplorerSearchResult = ({result}) => {
   return (
-    <p>{result.title}</p>
+    <>
+      <p className="explorer__search__results__filename"><span className="material-icons">description</span> {result.filename}</p>
+      <p className="explorer__search__results__text">{result.text}</p>
+    </>
   )
 }
 
 const ExplorerSearchResults = ({results}) => {
   const { t } = useTranslation();
   return (
-    <div>
-      <p>{t("explorer.search.results")}</p>
-      {results.map(result => (
-        <ExplorerSearchResult result={result} key={result.id}/>
+    <div className="explorer__content">
+      <p className="explorer__search__results__title"><span className="material-icons">plagiarism</span> {t("explorer.search.results")}</p>
+      {results.map((result, idx) => (
+        <ExplorerSearchResult result={result} key={`search-result-${idx}`}/>
       ))}
     </div>
   )
@@ -35,7 +38,7 @@ export const ExplorerSearchBar = () => {
 
 
   const onSubmit: SubmitHandler<Inputs> = async (search_query) => {
-    form.reset();
+    // form.reset();
 
     async function fetchData(search_query: string) {
       const response = await fetchAPI(`items/search/`, {params: {title: search_query}})
@@ -45,6 +48,7 @@ export const ExplorerSearchBar = () => {
     }
 
     fetchData(search_query.search_query).then(data => {
+      console.log(data)
       setResults(data)
     })
 
@@ -58,12 +62,13 @@ export const ExplorerSearchBar = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           id="search-form"
         >
-          <div>
+          <div className="explorer__search__container">
             <RhfInput
               label={t("explorer.tree.search")}
               // fullWidth={true}
               autoFocus={true}
               {...form.register("search_query")}
+              className="explorer__search__input"
             />
             <ExplorerSearchButton />
           </div>

@@ -502,6 +502,35 @@ $tablet: map.get($themes, "default", "theme", "breakpoints", "tablet");
   }
 }
 
+
+.explorer__search {
+  &__container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  &__input {
+    flex: 1;
+  }
+
+  &__results__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--c--theme--colors--greyscale-1000);
+    margin: 0;
+  }
+
+  &__results__filename {
+    font-weight: 700;
+    margin-bottom: 0
+  }
+
+  &__results__text {
+    margin-top: 0
+  }
+}
+
 @media (max-width: $tablet) {
   .explorer {
     background-color: var(--c--theme--colors--greyscale-000);
