@@ -726,7 +726,7 @@ class ItemViewSet(
         The user must be an administrator or owner of both the item being moved
         and the target parent item.
         """
-        user = request.use
+        user = request.user
         item = self.get_object()  # including permission checks
 
 
