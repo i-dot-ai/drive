@@ -1,6 +1,7 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
+from io import BytesIO
 import logging
 import re
 from urllib.parse import unquote, urlparse
@@ -14,6 +15,7 @@ from django.core.files.storage import default_storage
 from django.db import models as db
 from django.db import transaction
 from django.db.models.expressions import RawSQL
+from pgvector.django import CosineDistance
 
 import magic
 import rest_framework as drf
@@ -21,14 +23,49 @@ from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
 from rest_framework.throttling import UserRateThrottle
+from markitdown import MarkItDown
 
 from core import enums, models
 from core.tasks.item import process_item_deletion
 
+
 from . import permissions, serializers, utils
 from .filters import ItemFilter, ListItemFilter
+from ..models import TextChunk
+from openai import AzureOpenAI
+
+from typing import List
+
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+
+def split_text(text: str) -> List[Document]:
+    """
+    Split text into chunks using RecursiveCharacterTextSplitter.
+
+    Args:
+        text (str): The text to chunk.
+
+    Returns:
+        List[Document]: A list of Documents.
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2048,
+        chunk_overlap=100,
+        length_function=len,
+    )
+    document = Document(text)
+    return text_splitter.split_documents([document])
 
 logger = logging.getLogger(__name__)
+client = AzureOpenAI(
+  api_key = settings.AZURE_OPENAI_API_KEY,
+  api_version = "2024-10-21",
+  azure_endpoint =settings.AZURE_OPENAI_ENDPOINT
+)
+md = MarkItDown()
+
 
 ITEM_FOLDER = "item"
 UUID_REGEX = (
@@ -618,6 +655,27 @@ class ItemViewSet(
         mimetype = mime_detector.from_buffer(file.read(2048))
         file.close()
 
+        file = default_storage.open(item.file_key)
+        file_content = BytesIO(file.read())
+        extracted_texts = md.convert(file_content).text_content
+
+        extracted_texts = [d.page_content for d in split_text(extracted_texts)]
+
+        # TODO - add chunking
+
+        model = "text-embedding-3-large"
+        response = client.embeddings.create(input=extracted_texts, model=model).data
+        for i, (extracted_text, embedding) in enumerate(zip(extracted_texts, response)):
+            text_chunk = TextChunk(
+                item=item,
+                text=extracted_text,
+                order=i,
+                embedding=embedding.embedding,
+            )
+            text_chunk.save()
+        file.close()
+
+
         item.upload_state = models.ItemUploadStateChoices.UPLOADED
         item.mimetype = mimetype
         item.size = file.size
@@ -626,6 +684,33 @@ class ItemViewSet(
 
         serializer = self.get_serializer(item)
         return drf_response.Response(serializer.data, status=status.HTTP_200_OK)
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["get"],
+        url_path="download",
+        permission_classes=[AllowAny],
+    )
+    def download(self, request, *args, **kwargs):
+        """
+        Set an item state to uploaded after a successful upload.
+        """
+
+        item = self.get_object()
+
+        if item.type != models.ItemTypeChoices.FILE:
+            raise drf.exceptions.ValidationError(
+                {"item": "This action is only available for items of type FILE."},
+                code="item_upload_type_unavailable",
+            )
+
+
+        file = default_storage.open(item.file_key)
+        from django.http import HttpResponse
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        file.close()
+        response['Content-Disposition'] = f'attachment; filename="{item.file_key}"'
+        return response
 
     @drf.decorators.action(
         detail=False,
@@ -643,6 +728,47 @@ class ItemViewSet(
         queryset = self.get_queryset()
         queryset = queryset.filter(id__in=favorite_items_ids)
         return self.get_response_for_queryset(queryset)
+
+    @drf.decorators.action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[AllowAny],
+    )
+    def search(self, request, *args, **kwargs):
+        """Search for text within files created by the current user."""
+        if request.user.is_authenticated:
+            filter_args = {"item__creator": request.user}
+        else:
+            filter_args = {}
+        title_query = self.request.query_params.get('title', "")
+        if not title_query:
+            raise drf.exceptions.ValidationError({"title": 'may not be blank'})
+
+        model = "text-embedding-3-large"
+        embeddings = client.embeddings.create(input=[title_query], model=model).data
+        embedded_query = embeddings[0].embedding
+
+        top_k_results = self.request.query_params.get('k', 10)
+
+        queryset = (
+            TextChunk.objects
+            .select_related("item")
+            .filter(**filter_args)
+            .annotate(distance=CosineDistance("embedding", embedded_query))
+            .order_by("distance")[:top_k_results]
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = serializers.TextChunkSerializer(page, many=True)
+            # serializer = self.get_serializer(page, many=True)
+            result = self.get_paginated_response(serializer.data)
+            return result
+
+        # serializer = self.get_serializer(queryset, many=True)
+        serializer = serializers.TextChunkSerializer(queryset, many=True)
+        return drf.response.Response(serializer.data)
+
 
     @drf.decorators.action(
         detail=False,
@@ -679,6 +805,8 @@ class ItemViewSet(
         """
         user = request.user
         item = self.get_object()  # including permission checks
+
+
 
         # Validate the input payload
         serializer = serializers.MoveItemSerializer(data=request.data)

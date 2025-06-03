@@ -2,7 +2,7 @@ name: drive
 
 services:
   postgresql:
-    image: postgres:16
+    image: pgvector/pgvector:0.8.0-pg17
     ports:
       - "6434:5432"
     healthcheck:
@@ -214,3 +214,11 @@ services:
       - "8080:8080"
     depends_on:
       - kc_postgresql
+
+  mcp-proxy:
+    build:
+      context: .
+      dockerfile: ./src/proxy/Dockerfile
+      target: backend-development
+    ports:
+      - "8001:8001"

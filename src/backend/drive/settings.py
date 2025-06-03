@@ -58,6 +58,14 @@ class Base(Configuration):
     * DB_USER
     """
 
+    AZURE_OPENAI_API_KEY = values.Value(
+        environ_name="AZURE_OPENAI_API_KEY", environ_prefix=None
+    )
+
+    AZURE_OPENAI_ENDPOINT = values.Value(
+        environ_name="AZURE_OPENAI_ENDPOINT", environ_prefix=None
+    )
+
     DEBUG = False
     USE_SWAGGER = False
 
@@ -397,6 +405,7 @@ class Base(Configuration):
     INVITATION_VALIDITY_DURATION = 604800  # 7 days, in seconds
 
     # CORS
+    CORS_ALLOW_HEADERS = ["*"]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_ALL_ORIGINS = values.BooleanValue(True)
     CORS_ALLOWED_ORIGINS = values.ListValue([])
