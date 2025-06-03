@@ -6,7 +6,6 @@ import uploadFileSvg from "@/assets/icons/upload_file.svg";
 import uploadFolderSvg from "@/assets/icons/upload_folder.svg";
 import { Button } from "@openfun/cunningham-react";
 import { useTranslation } from "react-i18next";
-import { ExplorerSearchButton } from "../ExplorerSearchButton";
 
 type ExplorerTreeActionsProps = {
   openCreateFolderModal: () => void;
@@ -86,7 +85,6 @@ export const ExplorerTreeActions = ({
           </Button>
         </DropdownMenu>
       </div>
-      <ExplorerSearchButton />
     </div>
   );
 };

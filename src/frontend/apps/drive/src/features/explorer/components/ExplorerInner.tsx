@@ -11,6 +11,7 @@ import { Item } from "@/features/drivers/types";
 import { useEffect, useRef } from "react";
 import { ExplorerProps } from "./Explorer";
 import { ExplorerFilters } from "./ExplorerFilters";
+import { ExplorerSearchBar } from "./ExplorerSearchBar";
 import { useResponsive } from "@gouvfr-lasuite/ui-kit";
 export type FileUploadMeta = { file: File; progress: number };
 
@@ -147,6 +148,8 @@ export const ExplorerInner = (props: ExplorerProps) => {
           })}
         >
           <div className="explorer__container">
+            <ExplorerSearchBar />
+
             {selectedItems.length > 0 ? (
               <ExplorerSelectionBar />
             ) : (
