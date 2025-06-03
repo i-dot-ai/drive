@@ -7,6 +7,11 @@ from django.utils.translation import gettext_lazy as _
 from . import models
 
 
+class TextChunkInline(admin.TabularInline):
+    model = models.TextChunk
+    extra = 0
+
+
 @admin.register(models.User)
 class UserAdmin(auth_admin.UserAdmin):
     """Admin class for the User model"""
@@ -136,7 +141,7 @@ class ItemAdmin(admin.ModelAdmin):
             },
         ),
     )
-    inlines = (ItemAccessInline,)
+    inlines = (ItemAccessInline, TextChunkInline)
     list_display = (
         "id",
         "title",
@@ -185,4 +190,6 @@ class InvitationAdmin(admin.ModelAdmin):
 
 @admin.register(models.TextChunk)
 class TextChunkAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ("item",)
+
+

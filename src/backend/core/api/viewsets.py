@@ -686,6 +686,33 @@ class ItemViewSet(
         return drf_response.Response(serializer.data, status=status.HTTP_200_OK)
 
     @drf.decorators.action(
+        detail=True,
+        methods=["get"],
+        url_path="download",
+        permission_classes=[AllowAny],
+    )
+    def download(self, request, *args, **kwargs):
+        """
+        Set an item state to uploaded after a successful upload.
+        """
+
+        item = self.get_object()
+
+        if item.type != models.ItemTypeChoices.FILE:
+            raise drf.exceptions.ValidationError(
+                {"item": "This action is only available for items of type FILE."},
+                code="item_upload_type_unavailable",
+            )
+
+
+        file = default_storage.open(item.file_key)
+        from django.http import HttpResponse
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        file.close()
+        response['Content-Disposition'] = f'attachment; filename="{item.file_key}"'
+        return response
+
+    @drf.decorators.action(
         detail=False,
         methods=["get"],
         permission_classes=[permissions.IsAuthenticated],
@@ -715,7 +742,7 @@ class ItemViewSet(
             filter_args = {}
         title_query = self.request.query_params.get('title', "")
         if not title_query:
-            raise ValidationError(detail='title may not be blank')
+            raise drf.exceptions.ValidationError({"title": 'may not be blank'})
 
         model = "text-embedding-3-large"
         embeddings = client.embeddings.create(input=[title_query], model=model).data

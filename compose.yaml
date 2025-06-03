@@ -219,5 +219,6 @@ services:
     build:
       context: .
       dockerfile: ./src/proxy/Dockerfile
+      target: backend-development
     ports:
       - "8001:8001"

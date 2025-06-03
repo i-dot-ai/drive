@@ -405,6 +405,7 @@ class Base(Configuration):
     INVITATION_VALIDITY_DURATION = 604800  # 7 days, in seconds
 
     # CORS
+    CORS_ALLOW_HEADERS = ["*"]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_ALL_ORIGINS = values.BooleanValue(True)
     CORS_ALLOWED_ORIGINS = values.ListValue([])
