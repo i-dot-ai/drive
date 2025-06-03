@@ -214,3 +214,10 @@ services:
       - "8080:8080"
     depends_on:
       - kc_postgresql
+
+  mcp-proxy:
+    build:
+      context: .
+      dockerfile: ./src/proxy/Dockerfile
+    ports:
+      - "8001:8001"

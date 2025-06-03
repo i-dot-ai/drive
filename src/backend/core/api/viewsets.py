@@ -705,11 +705,14 @@ class ItemViewSet(
     @drf.decorators.action(
         detail=False,
         methods=["get"],
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[AllowAny],
     )
     def search(self, request, *args, **kwargs):
         """Search for text within files created by the current user."""
-        user = request.user
+        if request.user.is_authenticated:
+            filter_args = {"item__creator": request.user}
+        else:
+            filter_args = {}
         title_query = self.request.query_params.get('title', "")
         if not title_query:
             raise ValidationError(detail='title may not be blank')
@@ -723,7 +726,7 @@ class ItemViewSet(
         queryset = (
             TextChunk.objects
             .select_related("item")
-            .filter(item__creator=user)
+            .filter(**filter_args)
             .annotate(distance=CosineDistance("embedding", embedded_query))
             .order_by("distance")[:top_k_results]
         )
