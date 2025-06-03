@@ -58,8 +58,8 @@ class Base(Configuration):
     * DB_USER
     """
 
-    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"]
+    AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
 
     DEBUG = False
     USE_SWAGGER = False

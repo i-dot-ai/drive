@@ -534,3 +534,13 @@ class MoveItemSerializer(serializers.Serializer):
     """
 
     target_item_id = serializers.UUIDField(required=True)
+
+
+class TextChunkSerializer(serializers.ModelSerializer):
+    text = serializers.CharField()
+    order = serializers.IntegerField()
+    filename = serializers.CharField(read_only=True, source="item.filename")
+
+    class Meta:
+        model = models.TextChunk
+        fields = ['text', 'order', 'filename']
