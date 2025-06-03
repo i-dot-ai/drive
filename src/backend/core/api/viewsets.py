@@ -1,6 +1,7 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
+from io import BytesIO
 import logging
 import re
 from urllib.parse import unquote, urlparse
@@ -21,6 +22,7 @@ from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
 from rest_framework.throttling import UserRateThrottle
+from markitdown import MarkItDown
 
 from core import enums, models
 from core.tasks.item import process_item_deletion
@@ -37,6 +39,8 @@ client = AzureOpenAI(
   api_version = "2024-10-21",
   azure_endpoint =settings.AZURE_OPENAI_ENDPOINT
 )
+md = MarkItDown()
+
 
 ITEM_FOLDER = "item"
 UUID_REGEX = (
@@ -627,8 +631,11 @@ class ItemViewSet(
         file.close()
 
         file = default_storage.open(item.file_key)
-        extracted_texts = [f"some content goes here {i}" for i in range(4)]
+        file_content = BytesIO(file.read())
+        extracted_texts = md.convert(file_content).text_content 
+        extracted_texts = [extracted_texts]
 
+        # TODO - add chunking
 
         model = "text-embedding-3-large"
         response = client.embeddings.create(input=extracted_texts, model=model).data
@@ -721,6 +728,8 @@ class ItemViewSet(
         """
         user = request.user
         item = self.get_object()  # including permission checks
+
+
 
         # Validate the input payload
         serializer = serializers.MoveItemSerializer(data=request.data)
