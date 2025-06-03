@@ -10,10 +10,17 @@ type Inputs = {
   search_query: string;
 }
 
+// TODO: return the real URL from the server
+const URL_PREFIX = "http://localhost:8083/"
+
 const ExplorerSearchResult = ({result}) => {
+  const handleClick = () => {
+    window.open(`${URL_PREFIX}${result.file_key}`, "_blank");
+  }
+
   return (
     <>
-      <p className="explorer__search__results__filename"><span className="material-icons">description</span> {result.filename}</p>
+      <p className="explorer__search__results__filename" onClick={handleClick} ><i className="material-icons">description</i> {result.filename}</p>
       <p className="explorer__search__results__text">{result.text}</p>
     </>
   )
@@ -23,7 +30,7 @@ const ExplorerSearchResults = ({results}) => {
   const { t } = useTranslation();
   return (
     <div className="explorer__content">
-      <p className="explorer__search__results__title"><span className="material-icons">plagiarism</span> {t("explorer.search.results")}</p>
+      <p className="explorer__search__results__title"><i className="material-icons">plagiarism</i> {t("explorer.search.results")}</p>
       {results.map((result, idx) => (
         <ExplorerSearchResult result={result} key={`search-result-${idx}`}/>
       ))}
@@ -38,8 +45,6 @@ export const ExplorerSearchBar = () => {
 
 
   const onSubmit: SubmitHandler<Inputs> = async (search_query) => {
-    // form.reset();
-
     async function fetchData(search_query: string) {
       const response = await fetchAPI(`items/search/`, {params: {title: search_query}})
       const data = await response.json()
@@ -48,7 +53,6 @@ export const ExplorerSearchBar = () => {
     }
 
     fetchData(search_query.search_query).then(data => {
-      console.log(data)
       setResults(data)
     })
 

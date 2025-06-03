@@ -517,17 +517,34 @@ $tablet: map.get($themes, "default", "theme", "breakpoints", "tablet");
   &__results__title {
     font-size: 18px;
     font-weight: 700;
-    color: var(--c--theme--colors--greyscale-1000);
-    margin: 0;
+    color: var(--c--theme--colors--primary-text);
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: -10px;
+
+    i {
+      vertical-align: bottom;
+    }
   }
 
   &__results__filename {
     font-weight: 700;
-    margin-bottom: 0
+    margin-bottom: 0;
+
+    i {
+      vertical-align: bottom;
+    }
+
+    &:hover {
+      background-color: var(--c--theme--colors--greyscale-100);
+    }
   }
 
   &__results__text {
-    margin-top: 0
+    margin-top: 0;
+    padding: 14px;
+    color: var(--c--theme--colors--greyscale-700);
+
   }
 }
 
