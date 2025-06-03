@@ -540,7 +540,11 @@ class TextChunkSerializer(serializers.ModelSerializer):
     text = serializers.CharField()
     order = serializers.IntegerField()
     filename = serializers.CharField(read_only=True, source="item.filename")
+    file_key = serializers.SerializerMethodField()
+
+    def get_file_key(self, value):
+        return f"media/{value.item.file_key}"
 
     class Meta:
         model = models.TextChunk
-        fields = ['text', 'order', 'filename']
+        fields = ['text', 'order', 'filename', 'file_key']
