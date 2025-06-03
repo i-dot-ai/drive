@@ -34,6 +34,30 @@ from .filters import ItemFilter, ListItemFilter
 from ..models import TextChunk
 from openai import AzureOpenAI
 
+from typing import List
+
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+
+def split_text(text: str) -> List[Document]:
+    """
+    Split text into chunks using RecursiveCharacterTextSplitter.
+
+    Args:
+        text (str): The text to chunk.
+
+    Returns:
+        List[Document]: A list of Documents.
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2048,
+        chunk_overlap=100,
+        length_function=len,
+    )
+    document = Document(text)
+    return text_splitter.split_documents([document])
+
 logger = logging.getLogger(__name__)
 client = AzureOpenAI(
   api_key = settings.AZURE_OPENAI_API_KEY,
@@ -633,8 +657,9 @@ class ItemViewSet(
 
         file = default_storage.open(item.file_key)
         file_content = BytesIO(file.read())
-        extracted_texts = md.convert(file_content).text_content 
-        extracted_texts = [extracted_texts]
+        extracted_texts = md.convert(file_content).text_content
+
+        extracted_texts = [d.page_content for d in split_text(extracted_texts)]
 
         # TODO - add chunking
 
