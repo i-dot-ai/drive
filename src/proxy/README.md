@@ -5,3 +5,9 @@ We could not add an MCP server directly to django so this proxy exists to mediat
 ```commandline
 poetry run fastapi run main.py
 ```
+
+or 
+
+```commandline
+docker compose up mcp-proxy
+```

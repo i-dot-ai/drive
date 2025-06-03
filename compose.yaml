@@ -215,7 +215,6 @@ services:
     depends_on:
       - kc_postgresql
 
-
   mcp-proxy:
     build:
       context: .
