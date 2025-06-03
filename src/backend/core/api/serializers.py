@@ -549,8 +549,7 @@ class TextChunkSerializer(serializers.ModelSerializer):
 
     def get_url(self, value):
         """Return the URL of the item."""
-        url = default_storage.url(f"{value.item.id}/{value.item.file_key}")
-        return url
+        return f"/api/v1.0/items/{value.item.id}/download/"
 
     class Meta:
         model = models.TextChunk
