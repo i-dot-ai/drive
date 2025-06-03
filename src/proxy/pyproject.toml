@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pythonproject1"
+name = "proxy"
 version = "0.1.0"
 description = ""
 authors = ["gecBurton <g.e.c.burton@gmail.com>"]
@@ -8,6 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 pydantic-settings = "^2.5.2"
+uvicorn = "^0.34.3"
+requests = "^2.32.3"
+mcp = "^1.9.2"
+fastapi = "^0.115.12"
 
 
 [build-system]

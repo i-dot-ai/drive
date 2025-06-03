@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 @mcp.tool()
 def search_drive(query: str) -> list[dict]:
     """Add two numbers"""
-    response = requests.get(f"http://localhost:8071/api/v1.0/items/search/?title={query}")
+    response = requests.get(f"http://app-dev:8000/api/v1.0/items/search/?title={query}")
     return response.json()
 
 
