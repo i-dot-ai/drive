@@ -148,7 +148,8 @@
           "modal": {
             "title": "Search",
             "description": "The search function is under development and will be available soon."
-          }
+          },
+          "results": "Search results"
         },
         "selectionBar": {
           "caption_one": "1 item selected",
@@ -391,7 +392,8 @@
           "modal": {
             "title": "Rechercher",
             "description": "La fonction de recherche est en cours de développement et sera bientôt disponible."
-          }
+          },
+          "results": "Résultats de la recherche"
         },
         "selectionBar": {
           "caption_one": "1 élément sélectionné",
