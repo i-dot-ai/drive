@@ -18,5 +18,9 @@
   },
   "repository": "https://github.com/numerique-gouv/impress",
   "author": "DINUM",
-  "license": "MIT"
+  "license": "MIT",
+  "resolutions": {
+    "js-beautify": "1.15.2",
+    "minimatch": "10.2.1"
+  }
 }
