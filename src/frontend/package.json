@@ -9,7 +9,10 @@
   "scripts": {
     "lint": "yarn workspaces run lint"
   },
-  "resolutions": {},
+  "resolutions": {
+    "next": "15.5.18",
+    "i18next-fs-backend": "2.6.6"
+  },
   "devDependencies": {
     "turbo": "2.0.10"
   },
